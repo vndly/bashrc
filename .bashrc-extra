@@ -101,7 +101,6 @@ function base64decode () {
   node -pe "Buffer.from(atob(process.argv[1]), 'latin1').toString('utf8')" "${1#*_}"
 }
 
-# accepts an ISO string or epoch millis
 function timestamp () {
   if [ -z "$1" ]; then echo 'usage: timestamp "2026-08-11T10:00:00Z"' >&2; return 1; fi
 
@@ -138,19 +137,27 @@ export CLAUDE_CODE_EFFORT_LEVEL=max
 
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 export FLUTTER_HOME="/opt/Flutter/bin"
-export FLUTTER_PUB_HOME="/opt/Flutter/.pub-cache/bin/bin"
-export PUB_CACHE="/opt/Flutter/.pub-cache/bin"
+export FLUTTER_PUB_HOME="$HOME/.pub-cache/bin"
 export ANDROID_HOME="/opt/AndroidSdk"
 export ANDROID_STUDIO_HOME="/opt/AndroidStudio"
-export ANDROID_NDK_ROOT="/opt/AndroidSdk/ndk-bundle"
-export ANDROID_NDK_HOME="/opt/AndroidSdk/ndk-bundle"
-export PRIMAL_INTERPRETER="/home/max/.local/bin"
+export ANDROID_NDK_ROOT="/opt/AndroidSdk/ndk/28.2.13676358"
+export ANDROID_NDK_HOME="$ANDROID_NDK_ROOT"
 
-export PATH="$PATH:$FLUTTER_HOME"
-export PATH="$PATH:$ANDROID_HOME"
-export PATH="$PATH:$PUB_CACHE"
-export PATH="$PATH:$FLUTTER_PUB_HOME"
-export PATH="$PATH:$PRIMAL_INTERPRETER"
+# Appends to PATH only if the directory exists and is not already there
+function path_add () {
+  [ -d "$1" ] || return 0
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) PATH="$PATH:$1" ;;
+  esac
+}
+
+path_add "$FLUTTER_HOME"
+path_add "$FLUTTER_PUB_HOME"
+path_add "$ANDROID_HOME/platform-tools"
+path_add "$ANDROID_HOME/cmdline-tools/latest/bin"
+path_add "$ANDROID_HOME/emulator"
+export PATH
 
 # =================================== NVM ===================================
 
