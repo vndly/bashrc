@@ -140,8 +140,17 @@ export FLUTTER_HOME="/opt/Flutter/bin"
 export FLUTTER_PUB_HOME="$HOME/.pub-cache/bin"
 export ANDROID_HOME="/opt/AndroidSdk"
 export ANDROID_STUDIO_HOME="/opt/AndroidStudio"
-export ANDROID_NDK_ROOT="/opt/AndroidSdk/ndk/28.2.13676358"
-export ANDROID_NDK_HOME="$ANDROID_NDK_ROOT"
+# Newest fully installed NDK, so an SDK upgrade never leaves a stale version pinned.
+# A stale value is worse than none: Flutter takes the variable when set and skips
+# its own NDK lookup. Partial installs have no source.properties and are ignored.
+ANDROID_NDK_ROOT="$(find "$ANDROID_HOME/ndk" -mindepth 2 -maxdepth 2 -name source.properties -printf '%h\n' 2>/dev/null | sort -V | tail -1)"
+
+if [ -n "$ANDROID_NDK_ROOT" ]; then
+  export ANDROID_NDK_ROOT
+  export ANDROID_NDK_HOME="$ANDROID_NDK_ROOT"
+else
+  unset ANDROID_NDK_ROOT ANDROID_NDK_HOME
+fi
 
 # Appends to PATH only if the directory exists and is not already there
 function path_add () {
