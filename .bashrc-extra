@@ -1,24 +1,26 @@
-# usage: search_text "start()" /var/www
+# ================================== SEARCH ==================================
+
+# usage: search_text "start()" /home
 function search_text () {
   sudo egrep --color -r "$1" "$2"
 }
 
-# usage: search_text_simple "start()" /var/www
+# usage: search_text_simple "start()" /home
 function search_text_simple () {
   sudo egrep --color -rl "$1" "$2"
 }
 
-# usage: search_text "start()" php /var/www
+# usage: search_text "start()" php /home
 function search_text_by_extension () {
   sudo egrep --color -rn "$1" --include \*."$2" "$3"
 }
 
-# usage: search_file index.php /var/www
+# usage: search_file index.php /home
 function search_file () {
   sudo find "$2" -name "$1"
 }
 
-# ============================================================
+# ================================== GIT ==================================
 
 function commit () {
   git commit -am "$1"
@@ -76,7 +78,7 @@ function git_new_branch () {
   git branch --set-upstream-to=origin/$1
 }
 
-# =============================================================================================
+# ================================== UTILITIES ==================================
 
 function watchme () {
   cd functions
@@ -103,21 +105,16 @@ function timestamp () {
   node -pe "new Date('$1')" | tee /dev/tty | xclip -selection clipboard
 }
 
-function flutter_clean_pub_cache () {
-  dart pub cache gc
-}
+# ================================== COMMANDS ==================================
 
-function swap_clear () {
-  sudo swapoff -a && sudo swapon -a
-}
-
-# =============================================================================================
-
-alias ls="ls -la"
 alias ..="cd .."
+alias ls="ls -la"
 alias rm="rm -i"
+alias swap_clear="sudo swapoff -a && sudo swapon -a"
+alias flutter_clean_pub_cache="dart pub cache gc"
 
-# ========= UPDATERS =========
+# ================================== UPDATERS ==================================
+
 alias update_claude="curl -fsSL https://claude.ai/install.sh | bash"
 alias update_codex="npm install -g @openai/codex"
 alias update_agy="agy update"
@@ -127,7 +124,7 @@ alias update_flutter="flutter upgrade --force"
 alias update_settings="curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash"
 alias update_bashrc="curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash"
 
-# =============================================================================================
+# ================================== EXPORTS ==================================
 
 export VISUAL=vim
 export EDITOR=vim
@@ -149,10 +146,12 @@ export PATH="$PATH:$PUB_CACHE"
 export PATH="$PATH:$FLUTTER_PUB_HOME"
 export PATH="$PATH:$PRIMAL_INTERPRETER"
 
-# =============================================================================================
+# =================================== NVM ===================================
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# ================================== CLEAR ==================================
 
 clear
