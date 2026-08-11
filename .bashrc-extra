@@ -35,16 +35,13 @@ function push () {
 }
 
 function cush () {
-  git commit -am "$1"
-  git push
+  git commit -am "$1" && git push
 }
 
 function acpe () {
   local message="${1:-Improvements}"
 
-  git add -A
-  git commit -am "$message"
-  git push
+  git add -A && git commit -am "$message" && git push || return 1
 
   if [ -n "$1" ]; then
     exit
@@ -52,8 +49,7 @@ function acpe () {
 }
 
 function ace () {
-  git add -A
-  git commit -am "$1"
+  git add -A && git commit -am "$1" || return 1
   exit
 }
 
@@ -93,12 +89,35 @@ function npm_test_full () {
   npm test -- --maxWorkers=50%
 }
 
-function base64encode () {
+function base64_encode () {
   node -pe "Buffer.from(process.argv[1], 'utf8').toString('base64')" "$1"
 }
 
-function base64decode () {
-  node -pe "Buffer.from(atob(process.argv[1]), 'latin1').toString('utf8')" "${1#*_}"
+# Node's base64 decoder accepts the base64url alphabet too, so both forms work.
+# A "prefix_" is stripped only as a fallback, never up front: "_" is a real
+# base64url character, and stripping eagerly silently eats payload:
+# aGVsbG8_d29ybGQ= is "hello?world", not "world". A prefix left in place decodes
+# to invalid UTF-8 instead, which is what the U+FFFD test detects.
+function base64_decode () {
+  node -pe '
+    const input = process.argv[1];
+
+    // Buffer.from is lenient where the old atob was strict: it drops characters
+    // outside the alphabet rather than failing, so a mistyped or wrong-format
+    // argument would decode to silent garbage. Whitespace stays allowed because
+    // pasted base64 is often wrapped, and no length check because base64url is
+    // routinely unpadded.
+    if (!/^[A-Za-z0-9+/_=\s-]*$/.test(input)) {
+      console.error("not base64: " + input);
+      process.exit(1);
+    }
+
+    const decode = (s) => Buffer.from(s, "base64").toString("utf8");
+    const full = decode(input);
+    full.includes("\uFFFD") && input.includes("_")
+      ? decode(input.slice(input.indexOf("_") + 1))
+      : full;
+  ' "$1"
 }
 
 function timestamp () {
