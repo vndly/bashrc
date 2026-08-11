@@ -80,11 +80,12 @@ function git_reset_branch () {
 # ================================== UTILITIES ==================================
 
 function watchme () {
-  cd functions
+  cd functions || return 1
   npm run check && npm run build:watch
 }
 
 function npm_test_by_name () {
+  if [ -z "$1" ]; then echo 'usage: npm_test_by_name "test name"' >&2; return 1; fi
   npm test -- -t "$1"
 }
 
@@ -93,15 +94,21 @@ function npm_test_full () {
 }
 
 function base64encode () {
-  node -e "console.log(btoa('"$1"'))"
+  node -pe "Buffer.from(process.argv[1], 'utf8').toString('base64')" "$1"
 }
 
 function base64decode () {
-  node -e "console.log(atob('"$1"'.includes('_') ? '"$1"'.split('_')[1] : '"$1"'))"
+  node -pe "Buffer.from(atob(process.argv[1]), 'latin1').toString('utf8')" "${1#*_}"
 }
 
+# accepts an ISO string or epoch millis
 function timestamp () {
-  node -pe "new Date('$1')" | tee /dev/tty | xclip -selection clipboard
+  if [ -z "$1" ]; then echo 'usage: timestamp "2026-08-11T10:00:00Z"' >&2; return 1; fi
+
+  local out
+  out=$(node -pe "new Date(isNaN(process.argv[1]) ? process.argv[1] : +process.argv[1])" "$1") || return 1
+  echo "$out"
+  printf '%s' "$out" | xclip -selection clipboard
 }
 
 # ================================== COMMANDS ==================================
