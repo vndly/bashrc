@@ -1,4 +1,4 @@
-# ================================== SEARCH ==================================
+# =============================== SEARCH =================================
 
 # usage: search_text "start()" /home
 function search_text () {
@@ -24,7 +24,7 @@ function search_file () {
   sudo find -- "${2:-.}" -name "$1"
 }
 
-# ================================== GIT ==================================
+# ================================= GIT ==================================
 
 function commit () {
   git commit -am "$1"
@@ -73,7 +73,7 @@ function git_reset_branch () {
   git reset --hard "origin/$1"
 }
 
-# ================================== UTILITIES ==================================
+# ============================== UTILITIES ===============================
 
 function watchme () {
   cd functions || return 1
@@ -126,10 +126,10 @@ function timestamp () {
   local out
   out=$(node -pe "new Date(isNaN(process.argv[1]) ? process.argv[1] : +process.argv[1])" "$1") || return 1
   echo "$out"
-  printf '%s' "$out" | xclip -selection clipboard
+  printf '%s' "$out" | xclip -selection clipboard >/dev/null 2>&1
 }
 
-# ================================== COMMANDS ==================================
+# =============================== COMMANDS ===============================
 
 alias ..="cd .."
 alias ls="ls -la"
@@ -137,7 +137,7 @@ alias rm="rm -i"
 alias swap_clear="sudo swapoff -a && sudo swapon -a"
 alias flutter_clean_pub_cache="dart pub cache gc"
 
-# ================================== UPDATERS ==================================
+# ============================== UPDATERS ================================
 
 alias update_claude="claude update"
 alias update_codex="codex update"
@@ -153,7 +153,7 @@ alias update_nvm="curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master
 alias update_settings="curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash"
 alias update_bashrc="curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash"
 
-# ================================== EXPORTS ==================================
+# =============================== EXPORTS ================================
 
 export VISUAL=vim
 export EDITOR=vim
@@ -192,7 +192,7 @@ path_add "$ANDROID_HOME/cmdline-tools/latest/bin"
 path_add "$ANDROID_HOME/emulator"
 export PATH
 
-# =================================== NVM ===================================
+# ================================= NVM ==================================
 
 export NVM_DIR="$HOME/.nvm"
 
