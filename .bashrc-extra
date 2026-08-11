@@ -40,10 +40,10 @@ function cush () {
 }
 
 function acpe () {
-  msg="${1:-Improvements}"
+  local message="${1:-Improvements}"
 
   git add -A
-  git commit -am "$msg"
+  git commit -am "$message"
   git push
 
   if [ -n "$1" ]; then
@@ -74,12 +74,7 @@ function add () {
 }
 
 function git_reset_branch () {
-  git reset --hard origin/$1
-}
-
-function git_new_branch () {
-  git co -b $1
-  git branch --set-upstream-to=origin/$1
+  git reset --hard "origin/$1"
 }
 
 # ================================== UTILITIES ==================================
