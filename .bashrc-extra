@@ -124,7 +124,7 @@ alias update_claude="claude update"
 alias update_codex="codex update"
 alias update_agy="agy update"
 
-alias update_firebase="npm install -g firebase-tools"
+alias update_firebase="npm install -g firebase-tools@latest"
 alias update_npm="npm install -g npm@latest"
 alias update_flutter="flutter upgrade --force"
 
