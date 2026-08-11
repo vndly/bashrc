@@ -125,23 +125,23 @@ alias update_firebase="npm install -g firebase-tools"
 alias update_npm="npm install -g npm@latest"
 alias update_flutter="flutter upgrade --force"
 alias update_settings="curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash"
+alias update_bashrc="curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash"
 
 # =============================================================================================
 
 export VISUAL=vim
 export EDITOR=vim
+export CLAUDE_CODE_EFFORT_LEVEL=max
 
 export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
 export FLUTTER_HOME="/opt/Flutter/bin"
 export FLUTTER_PUB_HOME="/opt/Flutter/.pub-cache/bin/bin"
 export PUB_CACHE="/opt/Flutter/.pub-cache/bin"
-export ANDROID_HOME=/opt/AndroidSdk
-export ANDROID_STUDIO_HOME=/opt/AndroidStudio
-export ANDROID_NDK_ROOT=/opt/AndroidSdk/ndk-bundle
-export ANDROID_NDK_HOME=/opt/AndroidSdk/ndk-bundle
-export PRIMAL_INTERPRETER=/home/max/.local/bin
-
-export CLAUDE_CODE_EFFORT_LEVEL=max
+export ANDROID_HOME="/opt/AndroidSdk"
+export ANDROID_STUDIO_HOME="/opt/AndroidStudio"
+export ANDROID_NDK_ROOT="/opt/AndroidSdk/ndk-bundle"
+export ANDROID_NDK_HOME="/opt/AndroidSdk/ndk-bundle"
+export PRIMAL_INTERPRETER="/home/max/.local/bin"
 
 export PATH="$PATH:$FLUTTER_HOME"
 export PATH="$PATH:$ANDROID_HOME"
