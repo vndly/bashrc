@@ -240,7 +240,3 @@ if command -v nvm >/dev/null 2>&1 && ! nvm_use_default; then
   # back to an .nvmrc. Correctness over the load time --no-use saved.
   nvm use --silent default >/dev/null 2>&1 || nvm use --silent >/dev/null 2>&1
 fi
-
-# ================================== CLEAR ==================================
-
-#clear
