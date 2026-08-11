@@ -2,27 +2,25 @@
 
 set -euo pipefail
 
-# One-line remote installer for these Claude Code settings. Intended to be run
-# straight from a pipe:
+# One-line remote installer for this bashrc. Intended to be run straight from a
+# pipe:
 #
-#   curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash
 #
 # It clones the repository into a throwaway directory and hands off to deploy.sh,
 # which previews the changes and asks for confirmation before writing anything.
 
-REPO_URL="https://github.com/vndly/claude-code-settings.git"
+REPO_URL="https://github.com/vndly/bashrc.git"
 BRANCH="main"
 
 # --- Preconditions ----------------------------------------------------------
 
-# The clone needs git; deploy.sh additionally needs git (for its --no-index
-# diffs) and jq (for the settings merge). Fail early with a clear message.
-for cmd in git jq; do
-    if ! command -v "$cmd" >/dev/null 2>&1; then
-        echo "Error: '$cmd' is required but not installed." >&2
-        exit 1
-    fi
-done
+# The clone needs git, and deploy.sh needs it again for its --no-index diff.
+# Fail early with a clear message.
+if ! command -v git >/dev/null 2>&1; then
+    echo "Error: 'git' is required but not installed." >&2
+    exit 1
+fi
 
 # deploy.sh reads its y/n confirmation from the terminal. Under `curl ... | bash`
 # our own stdin is the curl pipe, so we hand deploy.sh /dev/tty instead (see the
@@ -42,7 +40,7 @@ tmp=""
 trap 'rm -rf "$tmp"' EXIT
 tmp="$(mktemp -d)"
 
-echo "Downloading settings..."
+echo "Downloading bashrc..."
 # GIT_TERMINAL_PROMPT=0 makes a failed clone (repo missing/renamed/private) fail
 # fast with a clear error instead of blocking on an interactive credential prompt
 # — /dev/tty is reachable here, so git would otherwise stop and wait for input.

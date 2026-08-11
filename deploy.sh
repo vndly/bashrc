@@ -3,74 +3,55 @@
 set -euo pipefail
 
 INPUT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT="$HOME/.claude"
+SOURCE="$INPUT/.bashrc-extra"
+TARGET="$HOME/.bashrc-extra"
 
-# Temp file holding the merged settings.json, computed during the preview and
-# reused by the write phase so the two can never drift. Cleaned up on exit.
-MERGED_SETTINGS=""
-trap 'rm -f "$MERGED_SETTINGS"' EXIT
+# `git diff --no-index` reports a missing operand on stderr and exits 1, which
+# is indistinguishable below from "the files are identical". Without this guard
+# a missing source would be reported as "already up to date" and exit 0.
+if [ ! -f "$SOURCE" ]; then
+    echo "Error: '$SOURCE' not found." >&2
+    exit 1
+fi
 
-# preview_file <src> <tgt> <label>
-# Print a one-line status for the file and, when it changed, a colored diff of
-# the current target against the incoming source. Never writes anything.
-preview_file() {
-    local src="$1" tgt="$2" label="$3"
-
-    if [ ! -e "$tgt" ]; then
-        echo "NEW:       $label (target does not exist, will be created)"
+# check_sourced
+# Warn when ~/.bashrc does not pull in the deployed file — without that line the
+# copy is inert. Deliberately does not edit ~/.bashrc: this script owns exactly
+# one file, so it prints the line to add instead of writing it.
+check_sourced() {
+    if [ -f "$HOME/.bashrc" ] && grep -q "bashrc-extra" "$HOME/.bashrc"; then
         return
     fi
 
-    # --numstat prints nothing when the files are identical, and "-<tab>-" as
-    # its first fields for binary files. It exits 1 when the files differ, so
-    # guard it against set -e.
-    local numstat
-    numstat="$(git diff --no-index --numstat -- "$tgt" "$src" 2>/dev/null || true)"
-
-    if [ -z "$numstat" ]; then
-        echo "unchanged: $label"
-        return
-    fi
-
-    if [ "${numstat%%$'\t'*}" = "-" ]; then
-        echo "binary:    $label (skipped, will be copied as-is)"
-        return
-    fi
-
-    echo "changed:   $label"
-    git diff --no-index --color=auto -- "$tgt" "$src" || true
+    echo
+    echo "Warning: ~/.bashrc does not source the deployed file. Add this line to it:"
+    echo
+    echo "    source ~/.bashrc-extra"
 }
 
 # --- Preview (read-only) ----------------------------------------------------
 
-echo "Previewing changes against $OUTPUT"
+echo "Previewing changes against $TARGET"
 echo
 
-# CLAUDE.md: straight overwrite.
-preview_file "$INPUT/CLAUDE.md" "$OUTPUT/CLAUDE.md" "CLAUDE.md"
-
-# settings.json: deep-merge into the existing file so locally-added keys (extra
-# enabledPlugins, marketplaces, etc.) survive. jq's "*" recursively merges
-# objects with the right operand winning, so the repo's values take precedence.
-# Preview the *merged result* (not the raw source) against the current target,
-# since that is what the write phase will actually produce.
-if [ -f "$OUTPUT/settings.json" ]; then
-    MERGED_SETTINGS="$(mktemp)"
-    jq -s '.[0] * .[1]' "$OUTPUT/settings.json" "$INPUT/settings.json" > "$MERGED_SETTINGS"
-    preview_file "$MERGED_SETTINGS" "$OUTPUT/settings.json" "settings.json (merged)"
+if [ ! -e "$TARGET" ]; then
+    echo "NEW:       .bashrc-extra (target does not exist, will be created)"
 else
-    echo "NEW:       settings.json (target does not exist, will be created)"
-fi
+    # --numstat prints nothing when the files are identical. It exits 1 when
+    # they differ, so guard it against set -e.
+    numstat="$(git diff --no-index --numstat -- "$TARGET" "$SOURCE" 2>/dev/null || true)"
 
-# Folder contents (flat files only, mirroring what cp -R will place).
-for src in "$INPUT/data/"*; do
-    [ -f "$src" ] || continue
-    preview_file "$src" "$OUTPUT/data/$(basename "$src")" "data/$(basename "$src")"
-done
-for src in "$INPUT/scripts/"*; do
-    [ -f "$src" ] || continue
-    preview_file "$src" "$OUTPUT/scripts/$(basename "$src")" "scripts/$(basename "$src")"
-done
+    # Nothing to write, so skip the confirmation entirely: the prompt should
+    # only ever appear when something is actually about to change.
+    if [ -z "$numstat" ]; then
+        echo "Already up to date. Nothing to do."
+        check_sourced
+        exit 0
+    fi
+
+    echo "changed:   .bashrc-extra"
+    git diff --no-index --color=auto -- "$TARGET" "$SOURCE" || true
+fi
 
 # --- Confirm ----------------------------------------------------------------
 
@@ -87,23 +68,7 @@ esac
 
 # --- Write ------------------------------------------------------------------
 
-# Make sure the target folders exist
-mkdir -p "$OUTPUT/data" "$OUTPUT/scripts"
+cp "$SOURCE" "$TARGET"
 
-# CLAUDE.md: safe to overwrite outright
-cp "$INPUT/CLAUDE.md" "$OUTPUT/CLAUDE.md"
-
-# settings.json: reuse the merged file built during the preview when the target
-# already existed; otherwise this is a first deploy, so copy the source as-is.
-if [ -n "$MERGED_SETTINGS" ]; then
-    mv "$MERGED_SETTINGS" "$OUTPUT/settings.json"
-    MERGED_SETTINGS=""
-else
-    cp "$INPUT/settings.json" "$OUTPUT/settings.json"
-fi
-
-# Copy the folder contents
-cp -R "$INPUT/data/." "$OUTPUT/data/"
-cp -R "$INPUT/scripts/." "$OUTPUT/scripts/"
-
-echo "Deployed Claude Code settings to $OUTPUT"
+echo "Deployed bashrc to $TARGET"
+check_sourced
