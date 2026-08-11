@@ -1,2 +1,12 @@
-# bashrc
-Bashrc
+# Bashrc
+
+## Quick install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash
+```
+
+## Manual install
+
+1. Clone the repository
+2. Run the command `./deploy.sh`
