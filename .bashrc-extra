@@ -2,22 +2,26 @@
 
 # usage: search_text "start()" /home
 function search_text () {
-  sudo egrep --color -r "$1" "$2"
+  if [ -z "$1" ]; then echo 'usage: search_text "start()" /home' >&2; return 1; fi
+  sudo grep -E --color -rnI --exclude-dir={.git,node_modules} -- "$1" "${2:-.}"
 }
 
-# usage: search_text_simple "start()" /home
-function search_text_simple () {
-  sudo egrep --color -rl "$1" "$2"
+# usage: search_text_files "start()" /home
+function search_text_files () {
+  if [ -z "$1" ]; then echo 'usage: search_text_files "start()" /home' >&2; return 1; fi
+  sudo grep -E --color -rlI --exclude-dir={.git,node_modules} -- "$1" "${2:-.}"
 }
 
-# usage: search_text "start()" php /home
+# usage: search_text_by_extension "start()" php /home
 function search_text_by_extension () {
-  sudo egrep --color -rn "$1" --include \*."$2" "$3"
+  if [ -z "$1" ] || [ -z "$2" ]; then echo 'usage: search_text_by_extension "start()" php /home' >&2; return 1; fi
+  sudo grep -E --color -rnI --include="*.$2" --exclude-dir={.git,node_modules} -- "$1" "${3:-.}"
 }
 
-# usage: search_file index.php /home
+# usage: search_file "index.php" /home
 function search_file () {
-  sudo find "$2" -name "$1"
+  if [ -z "$1" ]; then echo 'usage: search_file "index.php" /home' >&2; return 1; fi
+  sudo find -- "${2:-.}" -name "$1"
 }
 
 # ================================== GIT ==================================
