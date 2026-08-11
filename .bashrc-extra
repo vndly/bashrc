@@ -120,12 +120,17 @@ alias flutter_clean_pub_cache="dart pub cache gc"
 
 # ================================== UPDATERS ==================================
 
-alias update_claude="curl -fsSL https://claude.ai/install.sh | bash"
-alias update_codex="npm install -g @openai/codex"
+alias update_claude="claude update"
+alias update_codex="codex update"
 alias update_agy="agy update"
+
 alias update_firebase="npm install -g firebase-tools"
 alias update_npm="npm install -g npm@latest"
 alias update_flutter="flutter upgrade --force"
+
+# PROFILE=/dev/null stops the installer appending its own nvm block to ~/.bashrc:
+# it only looks there, so it can't see the copy this file already has.
+alias update_nvm="curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | PROFILE=/dev/null bash"
 alias update_settings="curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash"
 alias update_bashrc="curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash"
 
@@ -171,9 +176,71 @@ export PATH
 # =================================== NVM ===================================
 
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+# --no-use skips the "nvm use default" that nvm.sh runs on load, which is ~180ms
+# of this file's ~200ms. Nothing else changes: the nvm function is defined as
+# usual, so nvm use/install/ls all work. nvm_use_default below does the one part
+# that was skipped, putting the default version on PATH.
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Puts nvm's default version on PATH without paying for nvm's own resolver, by
+# reading the alias files directly. Returns non-zero when the default can't be
+# resolved that way, so the caller can fall back to a real nvm use: an
+# unresolved default must never silently leave PATH on the system node.
+function nvm_use_default () {
+  # A nested interactive shell inherits an active version through PATH, and nvm
+  # keeps that version on load rather than reverting to the default, so this
+  # does too. Overriding it would also strand the inherited bin directory
+  # further down PATH.
+  case ":$PATH:" in
+    *":$NVM_DIR/versions/node/"*"/bin:"*) return 0 ;;
+  esac
+
+  local target depth=0
+
+  [ -f "$NVM_DIR/alias/default" ] || return 1
+  target="$(cat "$NVM_DIR/alias/default")" || return 1
+  [ -n "$target" ] || return 1
+
+  # An alias can point at another alias (default -> lts/* -> lts/jod -> v22.11.0).
+  # "lts/*" is a real file named "*", hence the quoting on every lookup. -f, not
+  # -r, because an empty target would otherwise test the alias directory itself
+  # and cat it. The depth cap stops a cyclic alias from looping forever.
+  while [ -f "$NVM_DIR/alias/$target" ] && [ "$depth" -lt 10 ]; do
+    target="$(cat "$NVM_DIR/alias/$target")"
+    depth=$((depth + 1))
+  done
+
+  # A partial version matches on whole components only: "24" is v24.18.0 or
+  # v24.13.0, never v2.4.0. Hence the exact directory plus a glob for the
+  # versions that continue past it, and sort -V to take the newest of those.
+  local dir candidates=()
+  for dir in "$NVM_DIR/versions/node/v${target#v}" "$NVM_DIR/versions/node/v${target#v}".*; do
+    [ -x "$dir/bin/node" ] && candidates+=("$dir")
+  done
+  [ "${#candidates[@]}" -gt 0 ] || return 1
+
+  local bin
+  bin="$(printf '%s\n' "${candidates[@]}" | sort -V | tail -1)/bin"
+
+  # Prepended, not appended, because /usr/local/bin holds an unrelated node that
+  # would otherwise win. NVM_BIN is what nvm use exports, set here for parity.
+  case ":$PATH:" in
+    *":$bin:"*) ;;
+    *) PATH="$bin:$PATH" ;;
+  esac
+  export PATH
+  export NVM_BIN="$bin"
+}
+
+if command -v nvm >/dev/null 2>&1 && ! nvm_use_default; then
+  # The default is something only nvm can resolve, such as the "node" or
+  # "stable" alias, or there is no default at all and nvm.sh would have fallen
+  # back to an .nvmrc. Correctness over the load time --no-use saved.
+  nvm use --silent default >/dev/null 2>&1 || nvm use --silent >/dev/null 2>&1
+fi
 
 # ================================== CLEAR ==================================
 
-clear
+#clear
