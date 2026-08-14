@@ -151,6 +151,7 @@ alias update_flutter="flutter upgrade --force"
 # it only looks there, so it can't see the copy this file already has.
 alias update_nvm="curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | PROFILE=/dev/null bash"
 alias update_settings="curl -fsSL https://raw.githubusercontent.com/vndly/claude-code-settings/main/install.sh | bash"
+alias update_vscode="curl -fsSL https://raw.githubusercontent.com/vndly/vscode-settings/main/install.sh | bash"
 alias update_bashrc="curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash"
 
 # =============================== EXPORTS ================================
