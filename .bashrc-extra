@@ -40,12 +40,8 @@ function cush () {
 
 function acpe () {
   local message="${1:-Improvements}"
-
   git add -A && git commit -am "$message" && git push || return 1
-
-  if [ -n "$1" ]; then
-    exit
-  fi
+  exit
 }
 
 function ace () {
@@ -76,7 +72,7 @@ function git_reset_branch () {
 # ============================== UTILITIES ===============================
 
 function watchme () {
-  cd functions || return 1
+  if [ -d functions ]; then cd functions || return 1; fi
   npm run check && npm run build:watch
 }
 
