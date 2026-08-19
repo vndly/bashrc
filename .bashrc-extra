@@ -91,8 +91,7 @@ function base64_encode () {
 
 function spell_add() {
   (( $# )) || { echo "usage: spell-add <word>..." >&2; return 1; }
-  { printf '*%s\n' "$@"; echo '#'; } | aspell -a --lang=en_GB >/dev/null &&
-    echo "added ${#} word(s) to ~/.aspell.en.pws — restart Claude Code to apply"
+  { printf '*%s\n' "$@"; echo '#'; } | aspell -a --lang=en_GB >/dev/null
 }
 
 # Node's base64 decoder accepts the base64url alphabet too, so both forms work.
