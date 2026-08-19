@@ -89,6 +89,12 @@ function base64_encode () {
   node -pe "Buffer.from(process.argv[1], 'utf8').toString('base64')" "$1"
 }
 
+function spell_add() {
+  (( $# )) || { echo "usage: spell-add <word>..." >&2; return 1; }
+  { printf '*%s\n' "$@"; echo '#'; } | aspell -a --lang=en_GB >/dev/null &&
+    echo "added ${#} word(s) to ~/.aspell.en.pws — restart Claude Code to apply"
+}
+
 # Node's base64 decoder accepts the base64url alphabet too, so both forms work.
 # A "prefix_" is stripped only as a fallback, never up front: "_" is a real
 # base64url character, and stripping eagerly silently eats payload:
