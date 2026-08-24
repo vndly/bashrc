@@ -1,4 +1,4 @@
-# Bashrc
+# Bashrc Settings
 
 ## Quick install
 
