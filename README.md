@@ -3,7 +3,7 @@
 ## Quick install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/vndly/bashrc/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/vndly/bashrc-settings/main/install.sh | bash
 ```
 
 ## Manual install
